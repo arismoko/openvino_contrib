@@ -411,10 +411,10 @@ func goCallbackBridge(args *C.char, gen_result unsafe.Pointer) C.int {
 		// fmt.Printf("%s", goStr)
 		// os.Stdout.Sync()
 		FlushPending((*Sequence)(result))
-		return C.OV_GENAI_STREAMMING_STATUS_RUNNING
+		return C.OV_GENAI_STREAMING_STATUS_RUNNING
 	} else {
 		fmt.Println("Callback executed with NULL message!")
-		return C.OV_GENAI_STREAMMING_STATUS_STOP
+		return C.OV_GENAI_STREAMING_STATUS_STOP
 	}
 }
 
