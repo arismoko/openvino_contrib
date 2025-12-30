@@ -1,0 +1,16 @@
+# Example Compose File
+services:
+  ollama:
+    build:
+      context: "."
+      dockerfile: "Dockerfile_genai_ubuntu24"
+    image: "ollama_openvino_ubuntu24:v1"
+    volumes:
+      - "ollama:/root/.ollama"
+    ports:
+      - "11434:11434"
+    devices:
+      - "/dev/accel/accel0:/dev/accel/accel0"
+
+volumes:
+  ollama:

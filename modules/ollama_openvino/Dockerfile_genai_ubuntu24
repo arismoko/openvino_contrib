@@ -17,11 +17,9 @@ ARG GOVERSION=1.24.1
 RUN curl -fsSL https://golang.org/dl/go${GOVERSION}.linux-$(case $(uname -m) in x86_64) echo amd64 ;; aarch64) echo arm64 ;; esac).tar.gz | tar xz -C /usr/local
 ENV PATH=/usr/local/go/bin:$PATH
 
-RUN wget https://storage.openvinotoolkit.org/repositories/openvino_genai/packages/nightly/2025.2.0.0.dev20250513/openvino_genai_ubuntu24_2025.4.1.0_x86_64.tar.gz
-RUN tar -xzf openvino_genai_ubuntu24_2025.4.1.0_x86_64.tar.gz
-ENV GENAI_DIR=/home/ollama_ov_server/openvino_genai_ubuntu24_2025.4.1.0_x86_64
-
-RUN source /home/ollama_ov_server/openvino_genai_ubuntu24_2025.4.1.0_x86_64/setupvars.sh
+RUN curl -fsSLO https://storage.openvinotoolkit.org/repositories/openvino_genai/packages/2025.4/linux/openvino_genai_ubuntu24_2025.4.0.0_x86_64.tar.gz
+RUN tar -xzf openvino_genai_ubuntu24_2025.4.0.0_x86_64.tar.gz
+ENV GENAI_DIR=/home/ollama_ov_server/openvino_genai_ubuntu24_2025.4.0.0_x86_64
 
 ENV CGO_ENABLED=1
 ENV GODEBUG=cgocheck=0
@@ -30,11 +28,14 @@ ENV CGO_LDFLAGS=-L$GENAI_DIR/runtime/lib/intel64
 ENV CGO_CFLAGS=-I$GENAI_DIR/runtime/include
 
 WORKDIR /home/ollama_ov_server
-RUN git clone https://github.com/openvinotoolkit/openvino_contrib.git
-WORKDIR /home/ollama_ov_server/openvino_contrib/modules/ollama_openvino
+
+# Use the local module sources from the build context.
+COPY . /home/ollama_ov_server/ollama_openvino/
+WORKDIR /home/ollama_ov_server/ollama_openvino
 
 RUN go build -o /usr/bin/ollama .
 
 ENV OLLAMA_HOST=0.0.0.0:11434
 EXPOSE 11434
-ENTRYPOINT ["/bin/bash", "-c", "source /home/ollama_ov_server/openvino_genai_ubuntu24_2025.4.1.0_x86_64/setupvars.sh && /usr/bin/ollama serve"]
+RUN echo "alias ovimport='/home/ollama_ov_server/ollama_openvino/scripts/import_modelscope_openvino.sh'" >> /root/.bashrc
+ENTRYPOINT ["/bin/bash", "-c", "source /home/ollama_ov_server/openvino_genai_ubuntu24_2025.4.0.0_x86_64/setupvars.sh && /usr/bin/ollama serve"]
